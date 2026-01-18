@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
 import '../auth/login_screen.dart';
 
+// ===== WARNA SUPPLIFY =====
+const Color primaryBlue = Color(0xFF0A2540);
+const Color teal = Color(0xFF2EC4B6);
+const Color background = Color(0xFFF7F9FC);
+
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
-
-  // ====== WARNA SUPPLIIFY ======
-  static const Color primaryBlue = Color(0xFF0A2540);
-  static const Color teal = Color(0xFF2EC4B6);
-  static const Color softPurple = Color(0xFFE9E3FF);
-  static const Color background = Color(0xFFF7F5FF);
 
   @override
   Widget build(BuildContext context) {
@@ -17,13 +16,13 @@ class DashboardScreen extends StatelessWidget {
 
       // ================= APP BAR =================
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         title: const Text(
-          'Distributor Dashboard',
+          'Supplify',
           style: TextStyle(
-            fontWeight: FontWeight.bold,
             color: primaryBlue,
+            fontWeight: FontWeight.bold,
           ),
         ),
         actions: [
@@ -33,9 +32,8 @@ class DashboardScreen extends StatelessWidget {
               style: ElevatedButton.styleFrom(
                 backgroundColor: teal,
                 foregroundColor: Colors.white,
-                elevation: 2,
                 shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: BorderRadius.circular(14),
                 ),
               ),
               onPressed: () {
@@ -53,21 +51,21 @@ class DashboardScreen extends StatelessWidget {
 
       // ================= BODY =================
       body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // ---------- HERO / LOGO ----------
+            // ===== BRANDING CARD =====
             Container(
-              height: 220,
               width: double.infinity,
+              padding: const EdgeInsets.symmetric(vertical: 48),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(28),
                 boxShadow: [
                   BoxShadow(
-                    color: Color.fromRGBO(0, 0, 0, 0.05),
-                    blurRadius: 15,
+                    color: Colors.black.withOpacity(0.05),
+                    blurRadius: 18,
                     offset: const Offset(0, 8),
                   ),
                 ],
@@ -75,86 +73,62 @@ class DashboardScreen extends StatelessWidget {
               child: Center(
                 child: Image.asset(
                   'assets/images/logo.jpg',
-                  height: 90,
-                  fit: BoxFit.contain,
+                  height: 160,
                 ),
               ),
             ),
 
             const SizedBox(height: 32),
 
-            // ---------- TITLE ----------
-            const Text(
-              'Distributor Universal',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.bold,
-                color: primaryBlue,
-              ),
+            // ===== MANFAAT UNTUK PENGGUNA =====
+            _benefitCard(
+              icon: Icons.trending_down,
+              title: 'Harga Lebih Murah',
+              desc:
+                  'Produk dijual dengan harga distributor sehingga lebih hemat dibandingkan harga eceran.',
+            ),
+            _benefitCard(
+              icon: Icons.shopping_cart,
+              title: 'Belanja Mudah',
+              desc:
+                  'Proses belanja dilakukan langsung melalui aplikasi dengan tampilan yang sederhana dan mudah dipahami.',
+            ),
+            _benefitCard(
+              icon: Icons.local_offer,
+              title: 'Promo Menarik',
+              desc:
+                  'Pengguna dapat menikmati berbagai promo dan penawaran menarik secara berkala.',
+            ),
+            _benefitCard(
+              icon: Icons.lock,
+              title: 'Aman & Terpercaya',
+              desc:
+                  'Transaksi dilakukan secara aman dan data pengguna terjaga dengan baik.',
             ),
 
-            const SizedBox(height: 10),
+            const SizedBox(height: 24),
 
-            const Text(
-              'Platform manajemen distributor yang membantu Anda mengelola '
-              'produk, pesanan, dan mitra bisnis secara terintegrasi, cepat, '
-              'dan aman.',
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.7,
-                color: Colors.black54,
-              ),
-            ),
-
-            const SizedBox(height: 32),
-
-            // ---------- FEATURE CARDS ----------
-            Row(
-              children: [
-                _featureCard(
-                  icon: Icons.inventory_2,
-                  title: 'Manajemen Produk',
-                  desc: 'Tambah, edit, dan kelola stok produk secara real-time.',
-                ),
-                const SizedBox(width: 16),
-                _featureCard(
-                  icon: Icons.receipt_long,
-                  title: 'Manajemen Pesanan',
-                  desc: 'Pantau dan proses pesanan distributor dengan mudah.',
-                ),
-                const SizedBox(width: 16),
-                _featureCard(
-                  icon: Icons.people_alt,
-                  title: 'Manajemen Distributor',
-                  desc: 'Kelola mitra distributor dalam satu sistem.',
-                ),
-              ],
-            ),
-
-            const SizedBox(height: 32),
-
-            // ---------- INFO BANNER ----------
+            // ===== CTA BANNER =====
             Container(
+              width: double.infinity,
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
                 gradient: const LinearGradient(
-                  colors: [teal, Color(0xFF5F6FFF)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  colors: [teal, Color(0xFF4FACFE)],
                 ),
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Row(
                 children: const [
-                  Icon(Icons.local_shipping, color: Colors.white, size: 36),
+                  Icon(Icons.shopping_bag, color: Colors.white, size: 32),
                   SizedBox(width: 16),
                   Expanded(
                     child: Text(
-                      'Kelola seluruh proses distribusi Anda dalam satu '
-                      'platform yang modern dan terintegrasi.',
+                      'Mulai belanja sekarang dan nikmati kemudahan '
+                      'berbelanja dengan harga distributor.',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 15,
+                        fontSize: 14,
                         height: 1.6,
                       ),
                     ),
@@ -168,54 +142,60 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  // ================= FEATURE CARD WIDGET =================
-  static Widget _featureCard({
+  // ================= BENEFIT CARD =================
+  Widget _benefitCard({
     required IconData icon,
     required String title,
     required String desc,
   }) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(18),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: Color.fromRGBO(0, 0, 0, 0.05),
-              blurRadius: 12,
-              offset: const Offset(0, 6),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 12,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          CircleAvatar(
+            radius: 24,
+            backgroundColor: teal.withOpacity(0.15),
+            child: Icon(icon, color: teal),
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: primaryBlue,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  desc,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    color: Colors.black54,
+                    height: 1.6,
+                  ),
+                ),
+              ],
             ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            CircleAvatar(
-              radius: 26,
-              backgroundColor: softPurple,
-              child: Icon(icon, color: primaryBlue, size: 28),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              title,
-              style: const TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 16,
-                color: primaryBlue,
-              ),
-            ),
-            const SizedBox(height: 8),
-            Text(
-              desc,
-              style: const TextStyle(
-                fontSize: 14,
-                height: 1.6,
-                color: Colors.black54,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

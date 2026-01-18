@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'register_screen.dart';
 import '../../services/auth_service.dart';
+import '../../services/session_service.dart';
 import '../client/home_client.dart';
 import '../admin/home_admin.dart';
 
@@ -18,7 +19,7 @@ class _LoginScreenState extends State<LoginScreen> {
   bool isLoading = false;
   bool isPasswordVisible = false;
 
-  // ====== WARNA SUPPLIIFY ======
+  // ====== WARNA SUPPLIFY ======
   static const Color primaryBlue = Color(0xFF0A2540);
   static const Color teal = Color(0xFF2EC4B6);
   static const Color background = Color(0xFFF7F5FF);
@@ -26,31 +27,42 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> handleLogin() async {
     setState(() => isLoading = true);
 
-    final res = await AuthService.login(
-      emailController.text.trim(),
-      passwordController.text.trim(),
-    );
+    try {
+      final res = await AuthService.login(
+        emailController.text.trim(),
+        passwordController.text.trim(),
+      );
 
-    setState(() => isLoading = false);
+      setState(() => isLoading = false);
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(res['message'])),
-    );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(res['message'])),
+      );
 
-    if (res['status'] == true) {
-      final role = res['data']['role'];
+      if (res['status'] == true) {
+        // 🔥 INI BAGIAN PALING PENTING (SEBELUMNYA HILANG)
+        // SIMPAN USER KE SESSION
+        await SessionService.saveUser(res['data']);
 
-      if (role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeAdmin()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const HomeClient()),
-        );
+        final role = res['data']['role'];
+
+        if (role == 'admin') {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeAdmin()),
+          );
+        } else {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => const HomeClient()),
+          );
+        }
       }
+    } catch (e) {
+      setState(() => isLoading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Login gagal: $e')),
+      );
     }
   }
 
@@ -73,16 +85,16 @@ class _LoginScreenState extends State<LoginScreen> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(24),
           child: Container(
-            width: 420, // bagus untuk web
+            width: 420,
             padding: const EdgeInsets.all(24),
             decoration: BoxDecoration(
               color: Colors.white,
               borderRadius: BorderRadius.circular(24),
-              boxShadow: [
+              boxShadow: const [
                 BoxShadow(
                   color: Color.fromRGBO(0, 0, 0, 0.06),
                   blurRadius: 15,
-                  offset: const Offset(0, 8),
+                  offset: Offset(0, 8),
                 ),
               ],
             ),
@@ -100,7 +112,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 const SizedBox(height: 8),
                 const Text(
-                  'Silakan login untuk melanjutkan ke dashboard Suppliify.',
+                  'Silakan login untuk melanjutkan ke dashboard Supplify.',
                   style: TextStyle(color: Colors.black54),
                 ),
 
@@ -121,7 +133,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                 const SizedBox(height: 16),
 
-                // ---------- PASSWORD (SHOW / HIDE) ----------
+                // ---------- PASSWORD ----------
                 TextField(
                   controller: passwordController,
                   obscureText: !isPasswordVisible,

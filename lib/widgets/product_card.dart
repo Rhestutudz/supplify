@@ -18,46 +18,41 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // DEBUG (boleh dihapus nanti)
+    debugPrint('PRODUCT IMAGE URL: ${product.imageUrl}');
+
     return Card(
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
       ),
+      clipBehavior: Clip.antiAlias,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Image
+          // ================= IMAGE =================
           Expanded(
-            child: Container(
+            child: SizedBox(
               width: double.infinity,
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.vertical(
-                  top: Radius.circular(12),
-                ),
-                image: product.imageUrl != null
-                    ? DecorationImage(
-                        image: NetworkImage(product.imageUrl!),
-                        fit: BoxFit.cover,
-                      )
-                    : null,
-                color: product.imageUrl == null ? Colors.grey[200] : null,
-              ),
-              child: product.imageUrl == null
-                  ? const Icon(
-                      Icons.image,
-                      size: 50,
-                      color: Colors.grey,
+              child: product.imageUrl != null && product.imageUrl!.isNotEmpty
+                  ? Image.network(
+                      product.imageUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return _imageFallback();
+                      },
                     )
-                  : null,
+                  : _imageFallback(),
             ),
           ),
 
-          // Details
+          // ================= DETAILS =================
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
+                // NAME
                 Text(
                   product.name,
                   style: const TextStyle(
@@ -68,7 +63,10 @@ class ProductCard extends StatelessWidget {
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
                 ),
+
                 const SizedBox(height: 4),
+
+                // PRICE
                 Text(
                   'Rp ${product.price}',
                   style: const TextStyle(
@@ -77,15 +75,21 @@ class ProductCard extends StatelessWidget {
                     fontWeight: FontWeight.w600,
                   ),
                 ),
+
                 const SizedBox(height: 8),
+
+                // BUTTON
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton.icon(
                     onPressed: () {
                       context.read<CartProvider>().add(product);
+
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('${product.name} ditambahkan ke keranjang'),
+                          content: Text(
+                            '${product.name} ditambahkan ke keranjang',
+                          ),
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -105,6 +109,20 @@ class ProductCard extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  // ================= FALLBACK IMAGE =================
+  Widget _imageFallback() {
+    return Container(
+      color: Colors.grey[200],
+      child: const Center(
+        child: Icon(
+          Icons.image,
+          size: 40,
+          color: Colors.grey,
+        ),
       ),
     );
   }

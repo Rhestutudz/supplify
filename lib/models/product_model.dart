@@ -21,11 +21,11 @@ class Product {
     return Product(
       id: int.parse(json['id'].toString()),
       categoryId: int.parse(json['category_id'].toString()),
-      name: json['name'],
+      name: json['name'] ?? '',
       description: json['description'] ?? '',
       price: double.parse(json['price'].toString()),
       stock: int.parse(json['stock'].toString()),
-      
+      imageUrl: json['photo_url'], // ✅ WAJIB ADA
     );
   }
 }

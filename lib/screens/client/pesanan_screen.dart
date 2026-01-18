@@ -50,14 +50,21 @@ class _PesananScreenState extends State<PesananScreen> {
       // ================= BODY =================
       body: orderProvider.isLoading
           ? const Center(child: CircularProgressIndicator())
-          : orderProvider.orders.isEmpty
-              ? const Center(
+          : orderProvider.error != null
+              ? Center(
                   child: Text(
-                    'Belum ada pesanan',
-                    style: TextStyle(color: Colors.grey),
+                    'Error: ${orderProvider.error}',
+                    style: const TextStyle(color: Colors.red),
                   ),
                 )
-              : ListView.builder(
+              : orderProvider.orders.isEmpty
+                  ? const Center(
+                      child: Text(
+                        'Belum ada pesanan',
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
                   padding: const EdgeInsets.all(16),
                   itemCount: orderProvider.orders.length,
                   itemBuilder: (context, index) {

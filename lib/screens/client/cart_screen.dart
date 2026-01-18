@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../provider/cart_provider.dart';
+import '../../provider/order_provider.dart';
 import '../../services/order_service.dart';
+import '../../services/session_service.dart';
 import 'pesanan_screen.dart';
 
+// ===== WARNA SUPPLIFY =====
 const Color primaryBlue = Color(0xFF0A2540);
 const Color teal = Color(0xFF2EC4B6);
 const Color background = Color(0xFFF7F9FC);
@@ -13,7 +17,7 @@ class CartScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final cart = Provider.of<CartProvider>(context);
+    final cart = context.watch<CartProvider>();
 
     return Scaffold(
       backgroundColor: background,
@@ -40,12 +44,12 @@ class CartScreen extends StatelessWidget {
           ? const Center(
               child: Text(
                 'Keranjang masih kosong',
-                style: TextStyle(fontSize: 16),
+                style: TextStyle(fontSize: 16, color: Colors.grey),
               ),
             )
           : Column(
               children: [
-                // ===== LIST ITEM =====
+                // ===== LIST ITEM KERANJANG =====
                 Expanded(
                   child: ListView(
                     padding: const EdgeInsets.all(12),
@@ -55,6 +59,7 @@ class CartScreen extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
+                        margin: const EdgeInsets.only(bottom: 12),
                         child: Padding(
                           padding: const EdgeInsets.all(12),
                           child: Row(
@@ -83,7 +88,7 @@ class CartScreen extends StatelessWidget {
                                 ),
                               ),
 
-                              // ACTION QTY
+                              // AKSI JUMLAH
                               Row(
                                 children: [
                                   IconButton(
@@ -103,8 +108,10 @@ class CartScreen extends StatelessWidget {
                                         cart.increase(item.product.id),
                                   ),
                                   IconButton(
-                                    icon: const Icon(Icons.delete,
-                                        color: Colors.red),
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
+                                    ),
                                     onPressed: () =>
                                         cart.remove(item.product.id),
                                   ),
@@ -151,9 +158,10 @@ class CartScreen extends StatelessWidget {
                           ),
                         ],
                       ),
+
                       const SizedBox(height: 12),
 
-                      // CHECKOUT BUTTON
+                      // ===== TOMBOL CHECKOUT =====
                       ElevatedButton(
                         style: ElevatedButton.styleFrom(
                           backgroundColor: teal,
@@ -164,15 +172,33 @@ class CartScreen extends StatelessWidget {
                         ),
                         onPressed: () async {
                           try {
+                            // 1️⃣ Checkout ke backend
                             await OrderService.checkout(cart);
+
+                            // 2️⃣ Ambil user ID dari session
+                            final userId =
+                                await SessionService.getUserId();
+                            if (userId == null) {
+                              throw Exception('User belum login');
+                            }
+
+                            // 3️⃣ Fetch ulang pesanan (KUNCI MASALAH)
+                            await context
+                                .read<OrderProvider>()
+                                .fetchOrders(userId);
+
+                            // 4️⃣ Kosongkan keranjang
                             cart.clear();
 
+                            // 5️⃣ Notifikasi sukses
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
                                 content: Text('Checkout berhasil 🎉'),
+                                backgroundColor: Colors.green,
                               ),
                             );
 
+                            // 6️⃣ Pindah ke Pesanan Saya
                             Navigator.pushReplacement(
                               context,
                               MaterialPageRoute(
@@ -183,6 +209,7 @@ class CartScreen extends StatelessWidget {
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text('Checkout gagal: $e'),
+                                backgroundColor: Colors.red,
                               ),
                             );
                           }

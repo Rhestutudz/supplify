@@ -46,13 +46,15 @@ class OrderService {
   }
 
   static Future<List<Order>> getOrders(int userId) async {
+    final url = '${Api.baseUrl}/orders/user.php?user_id=$userId';
     final res = await http.get(
-      Uri.parse('${Api.baseUrl}/orders/user.php?user_id=$userId'),
+      Uri.parse(url),
     );
 
     final json = jsonDecode(res.body);
     if (json['status']) {
-      return (json['data'] as List).map((e) => Order.fromJson(e)).toList();
+      final orders = (json['data'] as List).map((e) => Order.fromJson(e)).toList();
+      return orders;
     } else {
       throw Exception(json['message']);
     }

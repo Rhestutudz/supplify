@@ -24,7 +24,7 @@ class ProductHorizontal extends StatelessWidget {
     }
 
     return SizedBox(
-      height: 210,
+      height: 230,
       child: ListView.separated(
         padding: const EdgeInsets.symmetric(horizontal: 16),
         scrollDirection: Axis.horizontal,
@@ -32,6 +32,9 @@ class ProductHorizontal extends StatelessWidget {
         separatorBuilder: (_, __) => const SizedBox(width: 12),
         itemBuilder: (context, index) {
           final product = products[index];
+
+          // DEBUG (boleh hapus nanti)
+          debugPrint('HORIZONTAL IMAGE URL: ${product.imageUrl}');
 
           return Container(
             width: 150,
@@ -49,20 +52,28 @@ class ProductHorizontal extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                // IMAGE
-                Container(
-                  height: 90,
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: const Center(
-                    child: Icon(Icons.image, size: 32),
+                // ================= IMAGE =================
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: SizedBox(
+                    height: 90,
+                    width: double.infinity,
+                    child: product.imageUrl != null &&
+                            product.imageUrl!.isNotEmpty
+                        ? Image.network(
+                            product.imageUrl!,
+                            fit: BoxFit.cover,
+                            errorBuilder: (context, error, stackTrace) {
+                              return _imageFallback();
+                            },
+                          )
+                        : _imageFallback(),
                   ),
                 ),
 
                 const SizedBox(height: 8),
 
+                // ================= NAME =================
                 Text(
                   product.name,
                   maxLines: 1,
@@ -72,6 +83,7 @@ class ProductHorizontal extends StatelessWidget {
 
                 const SizedBox(height: 4),
 
+                // ================= PRICE =================
                 Text(
                   'Rp ${product.price}',
                   style: const TextStyle(
@@ -82,6 +94,7 @@ class ProductHorizontal extends StatelessWidget {
 
                 const Spacer(),
 
+                // ================= BUTTON =================
                 SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
@@ -95,7 +108,9 @@ class ProductHorizontal extends StatelessWidget {
                       context.read<CartProvider>().add(product);
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
-                          content: Text('${product.name} ditambahkan ke keranjang'),
+                          content: Text(
+                            '${product.name} ditambahkan ke keranjang',
+                          ),
                           duration: const Duration(seconds: 2),
                         ),
                       );
@@ -107,6 +122,20 @@ class ProductHorizontal extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // ================= FALLBACK IMAGE =================
+  Widget _imageFallback() {
+    return Container(
+      color: Colors.grey.shade200,
+      child: const Center(
+        child: Icon(
+          Icons.image,
+          size: 32,
+          color: Colors.grey,
+        ),
       ),
     );
   }
