@@ -3,6 +3,11 @@ import '../../models/product_model.dart';
 import '../../services/product_service.dart';
 import 'product_form.dart';
 
+// ===== WARNA SUPPLIFY =====
+const Color primaryBlue = Color(0xFF0A2540);
+const Color teal = Color(0xFF2EC4B6);
+const Color background = Color(0xFFF7F9FC);
+
 class ProductManageScreen extends StatefulWidget {
   const ProductManageScreen({super.key});
 
@@ -28,8 +33,23 @@ class _ProductManageScreenState extends State<ProductManageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Kelola Produk')),
+      backgroundColor: background,
+
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        title: const Text(
+          'Kelola Produk',
+          style: TextStyle(
+            color: primaryBlue,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: primaryBlue),
+      ),
+
       floatingActionButton: FloatingActionButton(
+        backgroundColor: teal,
         child: const Icon(Icons.add),
         onPressed: () async {
           final result = await Navigator.push(
@@ -41,6 +61,7 @@ class _ProductManageScreenState extends State<ProductManageScreen> {
           if (result == true) refresh();
         },
       ),
+
       body: FutureBuilder<List<Product>>(
         future: products,
         builder: (context, snapshot) {
@@ -49,83 +70,125 @@ class _ProductManageScreenState extends State<ProductManageScreen> {
           }
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return const Center(child: Text('Belum ada produk'));
+            return const Center(
+              child: Text(
+                'Belum ada produk',
+                style: TextStyle(color: Colors.grey),
+              ),
+            );
           }
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: snapshot.data!.length,
             itemBuilder: (context, i) {
               final p = snapshot.data![i];
-              return Card(
-                margin:
-                    const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                child: ListTile(
-                  title: Text(p.name),
-                  subtitle: Text('Rp ${p.price} • Stok ${p.stock}'),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      // ===== EDIT =====
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue),
-                        onPressed: () async {
-                          final result = await Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (_) =>
-                                  ProductFormScreen(product: p),
-                            ),
-                          );
-                          if (result == true) refresh();
-                        },
-                      ),
-
-                      // ===== DELETE =====
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red),
-                        onPressed: () {
-                          showDialog(
-                            context: context,
-                            builder: (_) => AlertDialog(
-                              title: const Text('Hapus Produk'),
-                              content: Text(
-                                  'Yakin ingin menghapus "${p.name}"?'),
-                              actions: [
-                                TextButton(
-                                  onPressed: () =>
-                                      Navigator.pop(context),
-                                  child: const Text('Batal'),
-                                ),
-                                ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                      backgroundColor: Colors.red),
-                                  onPressed: () async {
-                                    Navigator.pop(context);
-                                    final res =
-                                        await ProductService.deleteProduct(
-                                            p.id);
-
-                                    ScaffoldMessenger.of(context)
-                                        .showSnackBar(SnackBar(
-                                            content:
-                                                Text(res['message'])));
-
-                                    if (res['status'] == true) refresh();
-                                  },
-                                  child: const Text('Hapus'),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      ),
-                    ],
-                  ),
-                ),
-              );
+              return _productCard(context, p);
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget _productCard(BuildContext context, Product p) {
+    return Card(
+      elevation: 2,
+      margin: const EdgeInsets.only(bottom: 12),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Row(
+          children: [
+            CircleAvatar(
+              radius: 24,
+              backgroundColor: teal.withOpacity(0.15),
+              child: const Icon(Icons.inventory, color: teal),
+            ),
+            const SizedBox(width: 12),
+
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    p.name,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 16,
+                      color: primaryBlue,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    'Rp ${p.price} • Stok ${p.stock}',
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                ],
+              ),
+            ),
+
+            Row(
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.edit, color: Colors.blue),
+                  onPressed: () async {
+                    final result = await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            ProductFormScreen(product: p),
+                      ),
+                    );
+                    if (result == true) refresh();
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.red),
+                  onPressed: () => _confirmDelete(context, p),
+                ),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _confirmDelete(BuildContext context, Product p) {
+    showDialog(
+      context: context,
+      builder: (_) => AlertDialog(
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(16),
+        ),
+        title: const Text('Hapus Produk'),
+        content: Text('Yakin ingin menghapus "${p.name}"?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Batal'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            onPressed: () async {
+              Navigator.pop(context);
+              final res =
+                  await ProductService.deleteProduct(p.id);
+
+              if (!mounted) return;
+
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(res['message'])),
+              );
+
+              if (res['status'] == true) refresh();
+            },
+            child: const Text('Hapus'),
+          ),
+        ],
       ),
     );
   }

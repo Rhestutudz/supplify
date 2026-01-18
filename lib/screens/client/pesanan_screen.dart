@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+
 import '../../provider/order_provider.dart';
 import '../../services/session_service.dart';
 
@@ -22,13 +23,17 @@ class _PesananScreenState extends State<PesananScreen> {
   @override
   void initState() {
     super.initState();
-    _loadOrders();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _loadOrders();
+    });
   }
 
   Future<void> _loadOrders() async {
     final userId = await SessionService.getUserId();
+    if (!mounted) return;
+
     if (userId != null) {
-      context.read<OrderProvider>().fetchOrders(userId);
+      await context.read<OrderProvider>().fetchOrders(userId);
     }
   }
 
@@ -45,57 +50,20 @@ class _PesananScreenState extends State<PesananScreen> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF0A2540),
         elevation: 0,
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _loadOrders,
+            tooltip: 'Refresh',
+          ),
+        ],
       ),
 
       // ================= BODY =================
-      body: orderProvider.isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : orderProvider.error != null
-              ? Center(
-                  child: Text(
-                    'Error: ${orderProvider.error}',
-                    style: const TextStyle(color: Colors.red),
-                  ),
-                )
-              : orderProvider.orders.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'Belum ada pesanan',
-                        style: TextStyle(color: Colors.grey),
-                      ),
-                    )
-                  : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: orderProvider.orders.length,
-                  itemBuilder: (context, index) {
-                    final order = orderProvider.orders[index];
-                    return Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(
-                          'Order #${order.id}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: Text(
-                          'Status: ${order.status}',
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                        trailing: Text(
-                          'Rp ${order.total}',
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF2EC4B6),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+      body: RefreshIndicator(
+        onRefresh: _loadOrders,
+        child: _buildBody(orderProvider),
+      ),
 
       // ================= BOTTOM NAV =================
       bottomNavigationBar: BottomNavigationBar(
@@ -106,27 +74,31 @@ class _PesananScreenState extends State<PesananScreen> {
         onTap: (index) {
           if (index == _currentIndex) return;
 
-          if (index == 0) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const HomeClient()),
-            );
-          } else if (index == 1) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const PromoScreen()),
-            );
-          } else if (index == 2) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const DaftarScreen()),
-            );
-          } else if (index == 4) {
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (_) => const AkunScreen()),
-            );
+          Widget page;
+          switch (index) {
+            case 0:
+              page = const HomeClient();
+              break;
+            case 1:
+              page = const PromoScreen();
+              break;
+            case 2:
+              page = const DaftarScreen();
+              break;
+            case 3:
+              // Already on PesananScreen, do nothing
+              return;
+            case 4:
+              page = const AkunScreen();
+              break;
+            default:
+              return;
           }
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (_) => page),
+          );
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
@@ -137,6 +109,62 @@ class _PesananScreenState extends State<PesananScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Akun'),
         ],
       ),
+    );
+  }
+
+  Widget _buildBody(OrderProvider provider) {
+    if (provider.isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (provider.error != null) {
+      return Center(
+        child: Text(
+          'Error: ${provider.error}',
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    }
+
+    if (provider.orders.isEmpty) {
+      return const Center(
+        child: Text(
+          'Belum ada pesanan',
+          style: TextStyle(color: Colors.grey),
+        ),
+      );
+    }
+
+    return ListView.builder(
+      padding: const EdgeInsets.all(16),
+      itemCount: provider.orders.length,
+      itemBuilder: (context, index) {
+        final order = provider.orders[index];
+
+        return Card(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
+          ),
+          margin: const EdgeInsets.only(bottom: 12),
+          child: ListTile(
+            title: Text(
+              'Order #${order.id}',
+              style: const TextStyle(fontWeight: FontWeight.bold),
+            ),
+            subtitle: Text(
+              'Status: ${order.status}',
+              style: const TextStyle(color: Colors.grey),
+            ),
+            trailing: Text(
+              'Rp ${order.total.toStringAsFixed(0)}',
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                color: Color(0xFF2EC4B6),
+              ),
+            ),
+          ),
+        );
+      },
     );
   }
 }

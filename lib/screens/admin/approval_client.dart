@@ -5,8 +5,7 @@ class ApprovalClientScreen extends StatefulWidget {
   const ApprovalClientScreen({super.key});
 
   @override
-  State<ApprovalClientScreen> createState() =>
-      _ApprovalClientScreenState();
+  State<ApprovalClientScreen> createState() => _ApprovalClientScreenState();
 }
 
 class _ApprovalClientScreenState extends State<ApprovalClientScreen> {
@@ -16,47 +15,71 @@ class _ApprovalClientScreenState extends State<ApprovalClientScreen> {
   @override
   void initState() {
     super.initState();
-    loadData();
+    _loadData();
   }
 
-  void loadData() {
+  void _loadData() {
     futureClients = AdminService.getPendingClients();
   }
 
-  Future<void> handleApprove(int id) async {
+  Future<void> _handleApprove(int id) async {
     setState(() => isProcessing = true);
 
     final res = await AdminService.approveClient(id);
 
     setState(() => isProcessing = false);
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(res['message'])));
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(res['message']),
+        backgroundColor: Colors.green,
+      ),
+    );
 
     if (res['status'] == true) {
-      setState(() => loadData());
+      _loadData();
+      setState(() {});
     }
   }
 
-  Future<void> handleReject(int id) async {
+  Future<void> _handleReject(int id) async {
     setState(() => isProcessing = true);
 
     final res = await AdminService.rejectClient(id);
 
     setState(() => isProcessing = false);
 
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(res['message'])));
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(res['message']),
+        backgroundColor: Colors.red,
+      ),
+    );
 
     if (res['status'] == true) {
-      setState(() => loadData());
+      _loadData();
+      setState(() {});
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Approval Client')),
+      backgroundColor: const Color(0xFFF6F8FA),
+
+      // ================= APP BAR =================
+      appBar: AppBar(
+        title: const Text('Approval Client'),
+        centerTitle: true,
+        backgroundColor: const Color(0xFF2ECC71),
+        elevation: 0,
+      ),
+
+      // ================= BODY =================
       body: FutureBuilder<List<dynamic>>(
         future: futureClients,
         builder: (context, snapshot) {
@@ -67,12 +90,17 @@ class _ApprovalClientScreenState extends State<ApprovalClientScreen> {
 
           if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return const Center(
-                child: Text('Tidak ada client pending'));
+              child: Text(
+                'Tidak ada client pending',
+                style: TextStyle(fontSize: 16),
+              ),
+            );
           }
 
           final clients = snapshot.data!;
 
           return ListView.builder(
+            padding: const EdgeInsets.all(12),
             itemCount: clients.length,
             itemBuilder: (context, index) {
               final c = clients[index];
@@ -81,23 +109,68 @@ class _ApprovalClientScreenState extends State<ApprovalClientScreen> {
                   : int.parse(c['id'].toString());
 
               return Card(
-                margin: const EdgeInsets.all(8),
-                child: ListTile(
-                  title: Text(c['name']),
-                  subtitle: Text(c['email']),
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+                elevation: 4,
+                margin: const EdgeInsets.only(bottom: 12),
+                child: Padding(
+                  padding: const EdgeInsets.all(12),
+                  child: Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(Icons.check,
-                            color: Colors.green),
-                        onPressed: () => handleApprove(id),
+                      CircleAvatar(
+                        radius: 24,
+                        backgroundColor: const Color(0xFF2ECC71),
+                        child: Text(
+                          c['name'][0].toUpperCase(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                          ),
+                        ),
                       ),
-                      IconButton(
-                        icon:
-                            const Icon(Icons.close, color: Colors.red),
-                        onPressed: () => handleReject(id),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              c['name'],
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              c['email'],
+                              style: TextStyle(
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      Column(
+                        children: [
+                          IconButton(
+                            tooltip: 'Approve',
+                            icon: const Icon(
+                              Icons.check_circle,
+                              color: Colors.green,
+                            ),
+                            onPressed: () => _handleApprove(id),
+                          ),
+                          IconButton(
+                            tooltip: 'Reject',
+                            icon: const Icon(
+                              Icons.cancel,
+                              color: Colors.red,
+                            ),
+                            onPressed: () => _handleReject(id),
+                          ),
+                        ],
+                      )
                     ],
                   ),
                 ),

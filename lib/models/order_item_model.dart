@@ -16,13 +16,18 @@ class OrderItem {
   });
 
   factory OrderItem.fromJson(Map<String, dynamic> json) {
-    return OrderItem(
-      id: json['id'] ?? 0,
-      orderId: json['order_id'] ?? 0,
-      productId: json['product_id'] ?? 0,
-      productName: json['product_name'] ?? '',
-      qty: json['qty'] ?? 0,
-      price: double.tryParse(json['price'].toString()) ?? 0.0,
-    );
+    try {
+      return OrderItem(
+        id: json['id'] ?? 0,
+        orderId: json['order_id'] ?? 0,
+        productId: json['product_id'] ?? 0,
+        productName: json['product_name'] ?? '',
+        qty: json['qty'] ?? 0,
+        price: double.tryParse(json['price'].toString()) ?? 0.0,
+      );
+    } catch (e) {
+      print('Error parsing OrderItem: $e, json: $json');
+      rethrow;
+    }
   }
 }

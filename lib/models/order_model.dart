@@ -4,8 +4,9 @@ class Order {
   final int id;
   final int userId;
   final String status;
-  final double total;
+  final double total; // ✅ gunakan total
   final String createdAt;
+  final String customerName;
   final List<OrderItem> items;
 
   Order({
@@ -14,21 +15,25 @@ class Order {
     required this.status,
     required this.total,
     required this.createdAt,
+    required this.customerName,
     required this.items,
   });
 
   factory Order.fromJson(Map<String, dynamic> json) {
+    final items = json['items'] is List
+        ? List<OrderItem>.from(
+            json['items'].map((x) => OrderItem.fromJson(x)),
+          )
+        : <OrderItem>[];
+
     return Order(
-      id: json['id'] ?? 0,
-      userId: json['user_id'] ?? 0,
-      status: json['status'] ?? '',
-      total: double.tryParse(json['total'].toString()) ?? 0.0,
+      id: int.tryParse(json['id'].toString()) ?? 0,
+      userId: int.tryParse(json['user_id'].toString()) ?? 0,
+      status: json['status'] ?? 'pending',
+      total: double.tryParse(json['total'].toString()) ?? 0.0, // ✅ FIX UTAMA
       createdAt: json['created_at'] ?? '',
-      items: json['items'] != null
-          ? List<OrderItem>.from(
-              json['items'].map((x) => OrderItem.fromJson(x)),
-            )
-          : [],
+      customerName: json['user_name'] ?? '-',
+      items: items,
     );
   }
 }
